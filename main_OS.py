@@ -1,3 +1,5 @@
+# !!!!!  Code not working due to page security reasons
+
 import time
 import random
 from selenium import webdriver
