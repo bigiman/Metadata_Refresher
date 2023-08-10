@@ -28,7 +28,7 @@ def refresh_nft_metadata(driver, nft_range, filter_unrevealed=None):
             refresh_button.click()
             print(f"Metadata refreshed: {i}")
 
-            # Wait for 3 seconds after clicking the button
+            # Wait for 5 seconds after clicking the button
             time.sleep(5)
 
             # Reload the page after clicking the refresh button
@@ -69,7 +69,7 @@ def main(start_nft, end_nft, filter_unrevealed=None):
     driver.quit()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Refresh NFT Metadata')
+    parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on OnePlanet')
     parser.add_argument('start_nft', type=int, help='Start of the NFT range')
     parser.add_argument('end_nft', type=int, help='End of the NFT range')
     parser.add_argument('--filter-unrevealed', action='store_true', help='Filter by NFTs from unrevealed.txt')
