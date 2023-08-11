@@ -1,49 +1,74 @@
-# !!!!!  Code not working due to page security reasons
-
+import requests
 import time
-import random
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import StaleElementReferenceException
 
-# Safari's driver comes built-in, no need to specify a path
-driver = webdriver.Safari()
+# Constants
+OPENSEA_API_URL = "https://api.opensea.io/v2/collection/arkadians/nfts"
+API_KEY = "56d27fddc7ba42b8b17eb06e3f7e9e91"  # Your API key
 
-nfts = [175]
-for i in nfts:
-    url = f"https://opensea.io/assets/matic/0x3c178321f5bc73494046a46b5a065f9211b7c65e/{i}"
-    driver.get(url)
+HEADERS = {
+    "accept": "application/json",
+    "X-API-KEY": API_KEY,
+}
 
+def fetch_assets_from_collection():
+    params = {
+        "limit": "50",
+    }
+    assets = []
+    
     while True:
-        try:
-            # wait up to 10 seconds for the '...' button to be clickable
-            more_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[aria-label="More"]'))
-            )
-            ActionChains(driver).move_to_element(more_button).perform()
-            time.sleep(random.uniform(1.0, 2.0))  # pause for a random time
-            more_button.click()
+        response = requests.get(OPENSEA_API_URL, headers=HEADERS, params=params)
+        
+        # Check if the response status is not 200 OK
+        if response.status_code != 200:
+            print(f"API call failed with status code: {response.status_code}")
+            print(f"Response content: {response.text}")
             break
-        except StaleElementReferenceException:
-            continue
-
-    time.sleep(random.uniform(2.0, 3.0))  # pause for a random time
-
-    while True:
-        try:
-            refresh_metadata_option = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, 'div.sc-29427738-0.sc-630fc9ab-0.sc-99655001-0.sc-4422a702-0.sc-d386f9ad-1'))
-            )
-            ActionChains(driver).move_to_element(refresh_metadata_option).perform()
-            time.sleep(random.uniform(1.0, 2.0))  # pause for a random time
-            refresh_metadata_option.click()
+        
+        data = response.json()
+        assets_in_page = data.get('nfts', [])
+        
+        # If there are no assets in the current page, break out of the loop
+        if not assets_in_page:
             break
-        except StaleElementReferenceException:
-            continue
+        
+        assets.extend(assets_in_page)
+        
+        # Check if there's a cursor for the next page
+        next_cursor = data.get('next')
+        
+        # If there's no next cursor, break out of the loop
+        if not next_cursor:
+            break
+        
+        # Update the 'next' parameter for the next iteration
+        params["next"] = next_cursor
+        
+        time.sleep(2)  # Be kind to the API and avoid hitting rate limits
+    
+    return assets
 
-    time.sleep(random.uniform(5.0, 10.0))  # pause for a random time
 
-driver.quit()
+
+def refresh_metadata(asset):
+    # Assuming the V2 API has a similar endpoint for refreshing metadata
+    chain = "matic"
+    token_id = asset["identifier"]
+    address = asset["contract"]
+    url = f"https://api.opensea.io/v2/chain/{chain}/contract/{address}/nfts/{token_id}/refresh"
+    response = requests.post(url, headers=HEADERS)
+    return response.status_code == 200
+
+def main():
+    assets = fetch_assets_from_collection()
+    print(f"Found {len(assets)} assets in the collection.")
+    
+    for asset in assets:
+        if refresh_metadata(asset):
+            print(f"Successfully refreshed metadata for token_id: {asset['identifier']}")
+        else:
+            print(f"Failed to refresh metadata for token_id: {asset['identifier']}")
+        time.sleep(2)  # Be kind to the API and avoid hitting rate limits
+
+if __name__ == "__main__":
+    main()
