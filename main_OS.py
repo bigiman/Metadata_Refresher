@@ -1,5 +1,6 @@
 import requests
 import time
+import argparse
 
 # Constants
 OPENSEA_API_URL = "https://api.opensea.io/v2/collection/arkadians/nfts"
@@ -10,7 +11,8 @@ HEADERS = {
     "X-API-KEY": API_KEY,
 }
 
-def fetch_assets_from_collection():
+def fetch_assets_from_collection(start_nft, end_nft, filter_unrevealed=None):
+
     params = {
         "limit": "50",
     }
@@ -49,7 +51,6 @@ def fetch_assets_from_collection():
     return assets
 
 
-
 def refresh_metadata(asset):
     # Assuming the V2 API has a similar endpoint for refreshing metadata
     chain = "matic"
@@ -59,16 +60,34 @@ def refresh_metadata(asset):
     response = requests.post(url, headers=HEADERS)
     return response.status_code == 200
 
-def main():
-    assets = fetch_assets_from_collection()
+def main(start_nft, end_nft, filter_unrevealed=None):
+    assets = fetch_assets_from_collection(start_nft, end_nft, filter_unrevealed)
     print(f"Found {len(assets)} assets in the collection.")
     
-    for asset in assets:
+    # Filtering assets based on the range
+    filtered_assets = [asset for asset in assets if start_nft <= int(asset['identifier']) <= end_nft]
+    
+    # Further filtering based on "unrevealed.txt" if filter_unrevealed is set
+    if filter_unrevealed:
+        with open("unrevealed.txt", "r") as file:
+            unrevealed_nfts = set(map(int, file.readlines()))
+        filtered_assets = [asset for asset in filtered_assets if int(asset['identifier']) in unrevealed_nfts]
+    
+    for asset in filtered_assets:
         if refresh_metadata(asset):
             print(f"Successfully refreshed metadata for token_id: {asset['identifier']}")
         else:
             print(f"Failed to refresh metadata for token_id: {asset['identifier']}")
         time.sleep(2)  # Be kind to the API and avoid hitting rate limits
 
+
+parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on OpenSea')
+parser.add_argument('start_nft', type=int, help='Start of the NFT range')
+parser.add_argument('end_nft', type=int, help='End of the NFT range')
+parser.add_argument('--filter-unrevealed', action='store_true', help='Filter by NFTs from unrevealed.txt')
+
+args = parser.parse_args()
+
+
 if __name__ == "__main__":
-    main()
+    main(args.start_nft, args.end_nft, args.filter_unrevealed)
