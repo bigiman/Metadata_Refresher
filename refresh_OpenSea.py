@@ -11,6 +11,7 @@ HEADERS = {
     "X-API-KEY": API_KEY,
 }
 
+
 def fetch_assets_from_collection(start_nft, end_nft, filter_unrevealed=None):
 
     params = {
@@ -25,6 +26,20 @@ def fetch_assets_from_collection(start_nft, end_nft, filter_unrevealed=None):
         if response.status_code != 200:
             print(f"API call failed with status code: {response.status_code}")
             print(f"Response content: {response.text}")
+            
+            # Handle rate limiting (status code 429)
+            if response.status_code == 429:
+                try:
+                    # Extract the expected wait time from the response
+                    wait_time = int(response.json().get("detail", "").split(" ")[-2])
+                    print(f"Rate limited. Waiting for {wait_time + 1} seconds.")
+                    time.sleep(wait_time + 1)  # Sleep for the suggested time + 1 second buffer
+                    continue  # Retry the request after waiting
+                except:
+                    print("Failed to extract wait time from rate limit response. Sleeping for default duration.")
+                    time.sleep(10)  # Default sleep duration if extraction fails
+                    continue
+            
             break
         
         data = response.json()
@@ -49,7 +64,6 @@ def fetch_assets_from_collection(start_nft, end_nft, filter_unrevealed=None):
         time.sleep(2)  # Be kind to the API and avoid hitting rate limits
     
     return assets
-
 
 def refresh_metadata(asset):
     # Assuming the V2 API has a similar endpoint for refreshing metadata
@@ -80,14 +94,12 @@ def main(start_nft, end_nft, filter_unrevealed=None):
             print(f"Failed to refresh metadata for token_id: {asset['identifier']}")
         time.sleep(2)  # Be kind to the API and avoid hitting rate limits
 
+def run_open_sea(start_nft, end_nft, filter_unrevealed=False):
+    parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on OpenSea')
+    parser.add_argument('start_nft', type=int, help='Start of the NFT range')
+    parser.add_argument('end_nft', type=int, help='End of the NFT range')
+    parser.add_argument('--filter-unrevealed', action='store_true', help='Filter by NFTs from unrevealed.txt')
 
-parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on OpenSea')
-parser.add_argument('start_nft', type=int, help='Start of the NFT range')
-parser.add_argument('end_nft', type=int, help='End of the NFT range')
-parser.add_argument('--filter-unrevealed', action='store_true', help='Filter by NFTs from unrevealed.txt')
-
-args = parser.parse_args()
-
-
-if __name__ == "__main__":
+    args = parser.parse_args()
+    
     main(args.start_nft, args.end_nft, args.filter_unrevealed)

@@ -58,7 +58,7 @@ def main(start_nft, end_nft, filter_unrevealed=None):
 
     driver.quit()
 
-if __name__ == "__main__":
+def run_magic_eden(start_nft, end_nft, filter_unrevealed=False):
     parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on Magic Eden')
     parser.add_argument('start_nft', type=int, help='Start of the NFT range')
     parser.add_argument('end_nft', type=int, help='End of the NFT range')
