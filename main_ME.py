@@ -30,8 +30,8 @@ def refresh_nft_metadata(driver, nft_range, filter_unrevealed=None):
         page_source_content = driver.page_source
         if "Unrevealed Arkadian" in page_source_content:
             print(f"Unrevealed Arkadian found: {i}")
-            with open("unrevealed_ME.txt", "a") as unrevealed_file:
-                unrevealed_file.write(f"{i}\n")
+            # with open("unrevealed_ME.txt", "a") as unrevealed_file:
+            #     unrevealed_file.write(f"{i}\n")
 
         try:
             # Wait up to 20 seconds for the button to be clickable
