@@ -20,6 +20,19 @@ def refresh_nft_metadata(driver, nft_range, filter_unrevealed=None):
         url = BASE_URL.format(i)
         driver.get(url)
 
+        # Ensure the page is fully loaded by waiting for a common element to be present
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+
+        # # Check if the NFT is unrevealed and write the index i to unrevealed_ME.txt
+        # unrevealed_elements = driver.find_elements(By.XPATH, "//div[contains(., 'Unrevealed Arkadian ')]/h1")
+        # if unrevealed_elements:
+                # Check if the NFT is unrevealed and write the index i to unrevealed_ME.txt
+        page_source_content = driver.page_source
+        if "Unrevealed Arkadian" in page_source_content:
+            print(f"Unrevealed Arkadian found: {i}")
+            with open("unrevealed_ME.txt", "a") as unrevealed_file:
+                unrevealed_file.write(f"{i}\n")
+
         try:
             # Wait up to 20 seconds for the button to be clickable
             refresh_button = WebDriverWait(driver, 20).until(
@@ -46,7 +59,7 @@ def main(start_nft, end_nft, filter_unrevealed=None):
     driver.quit()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on OnePlanet')
+    parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on Magic Eden')
     parser.add_argument('start_nft', type=int, help='Start of the NFT range')
     parser.add_argument('end_nft', type=int, help='End of the NFT range')
     parser.add_argument('--filter-unrevealed', action='store_true', help='Filter by NFTs from unrevealed.txt')
