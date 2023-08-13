@@ -25,6 +25,12 @@ def refresh_nft_metadata(driver, nft_range, filter_unrevealed=None):
             refresh_button = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[data-btn-type="refresh"]'))
             )
+            # Check if unrevealed
+            nft_name_elem_orig = driver.find_element(By.CSS_SELECTOR, 'h2.nfts_name__VPIvC')
+            unrevealed_orig = False
+            if nft_name_elem_orig.text == "Unrevealed Arkadian ":
+                unrevealed_orig = True
+                
             refresh_button.click()
             print(f"Metadata refreshed: {i}")
 
@@ -46,10 +52,12 @@ def refresh_nft_metadata(driver, nft_range, filter_unrevealed=None):
                     file.write(str(i) + "\n")
                 print(f"Unrevealed Arkadian found: {i}")
             else:
-                with open("newreveals.txt", "a") as file:
-                    file.write(str(i) + "\n")
-                print(f"New Revealed Arkadian found: {i}")
-
+                if unrevealed_orig:
+                    with open("newreveals.txt", "a") as file:
+                        file.write(str(i) + "\n")
+                    print(f"New Revealed Arkadian found: {i}")
+                else:
+                    print(f"Arkadian aleready revealed: {i}")
 
         except TimeoutException as te:
             print(f"Timeout occurred on NFT {i}: {te}")
