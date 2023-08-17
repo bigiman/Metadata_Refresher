@@ -95,11 +95,12 @@ def main(start_nft, end_nft, filter_unrevealed=None):
         time.sleep(2)  # Be kind to the API and avoid hitting rate limits
 
 def run_open_sea(start_nft, end_nft, filter_unrevealed=False):
-    parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on OpenSea')
-    parser.add_argument('start_nft', type=int, help='Start of the NFT range')
-    parser.add_argument('end_nft', type=int, help='End of the NFT range')
-    parser.add_argument('--filter-unrevealed', action='store_true', help='Filter by NFTs from unrevealed.txt')
+    # parser = argparse.ArgumentParser(description='Refresh Arkadians Metadata on OpenSea')
+    # parser.add_argument('start_nft', type=int, help='Start of the NFT range')
+    # parser.add_argument('end_nft', type=int, help='End of the NFT range')
+    # parser.add_argument('--filter-unrevealed', action='store_true', help='Filter by NFTs from unrevealed.txt')
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
     
-    main(args.start_nft, args.end_nft, args.filter_unrevealed)
+    # main(args.start_nft, args.end_nft, args.filter_unrevealed)
+    main(start_nft, end_nft, filter_unrevealed)
