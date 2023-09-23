@@ -4,7 +4,7 @@ import argparse
 
 # Constants
 OPENSEA_API_URL = "https://api.opensea.io/v2/collection/arkadians/nfts"
-API_KEY = "56d27fddc7ba42b8b17eb06e3f7e9e91"  # Your API key
+API_KEY = "0079f43916304deab61d995b42f01bed"  # Your API key
 
 HEADERS = {
     "accept": "application/json",
